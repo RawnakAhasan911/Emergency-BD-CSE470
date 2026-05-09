@@ -1,6 +1,12 @@
 import { createApp } from 'vue';
-import './style.css'; // Imports Tailwind CSS and global styles
+import './style.css'; 
 import App from './App.vue';
+import router from './router'; // 1. Import the router configuration
 
-// Initialize the Vue application and mount it to the #app div in index.html
-createApp(App).mount('#app');
+const app = createApp(App);
+
+// 2. Tell Vue to use the router before mounting
+app.use(router); 
+
+// 3. Mount the application
+app.mount('#app');

@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#111] text-white font-mono flex flex-col justify-center items-center p-4">
     <div class="w-full max-w-md p-8">
       
-      <!-- Header Tabs: Click these to swap modes! -->
+      <!-- Header Tabs: Swap between ACCESS (Login) and REGISTER -->
       <div class="flex justify-between items-center mb-8 border-b border-[#333] pb-4 select-none">
         <h2 
           @click="isLoginMode = true; errorMessage = ''"
@@ -20,16 +20,15 @@
         </h2>
       </div>
 
-      <!-- Error Message Box -->
-      <div v-if="errorMessage" class="border border-rose-600 text-rose-600 p-4 mb-6">
-        {{ errorMessage }}
+      <!-- Error Message Box (Feature 5: Feedback Messages) -->
+      <div v-if="errorMessage" class="border border-rose-600 text-rose-600 p-4 mb-6 text-sm">
+        [ SYSTEM ERROR ]: {{ errorMessage }}
       </div>
 
       <!-- ========================================== -->
-      <!-- 1. LOGIN FORM (Shows when ACCESS is active)-->
+      <!-- 1. LOGIN FORM                              -->
       <!-- ========================================== -->
       <form v-if="isLoginMode" @submit.prevent="handleLogin" class="space-y-6">
-        
         <div>
           <label class="block text-sm text-gray-400 mb-2">Email Identification</label>
           <input v-model="email" type="email" required class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600">
@@ -37,7 +36,20 @@
 
         <div>
           <label class="block text-sm text-gray-400 mb-2">Passcode</label>
-          <input v-model="password" type="password" required class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600">
+          <div class="relative">
+            <input 
+              v-model="password" 
+              :type="isPasswordVisible ? 'text' : 'password'" 
+              required 
+              maxlength="16" 
+              class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600 pr-12"
+              placeholder="MAX 16 CHARS"
+            >
+            <!-- Feature 6: Interactive Password Visibility Toggle -->
+            <button type="button" @click="togglePassword" class="absolute right-3 top-3 text-[10px] text-gray-500 hover:text-rose-600 font-bold">
+              {{ isPasswordVisible ? 'HIDE' : 'SHOW' }}
+            </button>
+          </div>
         </div>
 
         <button type="submit" :disabled="isLoading" class="w-full bg-rose-600 text-white font-bold tracking-widest py-4 mt-6 hover:bg-rose-700 transition-colors disabled:opacity-50">
@@ -46,10 +58,9 @@
       </form>
 
       <!-- ========================================== -->
-      <!-- 2. REGISTER FORM (Shows when REGISTER is active) -->
+      <!-- 2. REGISTER FORM                           -->
       <!-- ========================================== -->
       <form v-else @submit.prevent="handleRegister" class="space-y-6">
-        
         <div>
           <label class="block text-sm text-gray-400 mb-2">Citizen Name</label>
           <input v-model="name" type="text" required class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600">
@@ -62,12 +73,29 @@
 
         <div>
           <label class="block text-sm text-gray-400 mb-2">Create Passcode</label>
-          <input v-model="password" type="password" required class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600">
+          <div class="relative">
+            <input 
+              v-model="password" 
+              :type="isPasswordVisible ? 'text' : 'password'" 
+              required 
+              maxlength="16"
+              class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600 pr-12"
+            >
+            <button type="button" @click="togglePassword" class="absolute right-3 top-3 text-[10px] text-gray-500 hover:text-rose-600 font-bold">
+              {{ isPasswordVisible ? 'HIDE' : 'SHOW' }}
+            </button>
+          </div>
         </div>
 
         <div>
           <label class="block text-sm text-gray-400 mb-2">Confirm Passcode</label>
-          <input v-model="confirmPassword" type="password" required class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600">
+          <input 
+            v-model="confirmPassword" 
+            :type="isPasswordVisible ? 'text' : 'password'" 
+            required 
+            maxlength="16"
+            class="w-full bg-black border border-[#333] p-3 text-white focus:outline-none focus:border-rose-600"
+          >
         </div>
 
         <button type="submit" :disabled="isLoading" class="w-full bg-rose-600 text-white font-bold tracking-widest py-4 mt-6 hover:bg-rose-700 transition-colors disabled:opacity-50">
@@ -75,10 +103,10 @@
         </button>
       </form>
       
-      <!-- Guest Link -->
-      <div class="mt-8 text-center">
-        <p class="text-gray-500 mb-4">Or continue with limited clearance</p>
-        <button class="border border-[#333] text-gray-400 px-6 py-2 hover:text-white transition-colors">
+      <!-- Feature 11: Guest Entry (Redirects to Dashboard) -->
+      <div class="mt-8 text-center border-t border-[#222] pt-6">
+        <p class="text-gray-600 mb-4 text-xs tracking-widest uppercase">Limited Clearance Access</p>
+        <button @click="router.push('/dashboard')" class="border border-[#333] text-gray-400 px-6 py-2 hover:text-white hover:border-white transition-colors text-sm">
           ENTER AS GUEST
         </button>
       </div>
@@ -89,27 +117,34 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 
-// TRUE = Show Login (Access) | FALSE = Show Register
-const isLoginMode = ref(true); 
+const router = useRouter();
 
-// Form Data Variables
+// UI and Mode State
+const isLoginMode = ref(true);
+const isPasswordVisible = ref(false);
+const isLoading = ref(false);
+const errorMessage = ref('');
+
+// Form Data
 const name = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 
-// UI Variables
-const errorMessage = ref('');
-const isLoading = ref(false);
+// Feature 6 Logic
+const togglePassword = () => {
+  isPasswordVisible.value = !isPasswordVisible.value;
+};
 
-// --- REGISTRATION LOGIC ---
+// --- REGISTER LOGIC ---
 const handleRegister = async () => {
   errorMessage.value = '';
   isLoading.value = true;
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/register', {
+    await axios.post('http://127.0.0.1:8000/api/register', {
       name: name.value,
       email: email.value,
       password: password.value,
@@ -118,17 +153,13 @@ const handleRegister = async () => {
     
     alert("Identity Created! You may now access the system.");
     
-    // Clear the form and switch to Login tab automatically!
+    // Reset and switch to login
     password.value = '';
     confirmPassword.value = '';
     isLoginMode.value = true; 
 
   } catch (error) {
-    if (error.response && error.response.data.message) {
-       errorMessage.value = error.response.data.message;
-    } else {
-       errorMessage.value = "Registration failed. Check network.";
-    }
+    errorMessage.value = error.response?.data?.message || "Registration failed. Verify your connection.";
   } finally {
     isLoading.value = false;
   }
@@ -144,21 +175,21 @@ const handleLogin = async () => {
       password: password.value,
     });
     
-    // 1. Save the token to local storage so App.vue can find it
+    // Secure storage of session data
     localStorage.setItem('auth_token', response.data.token);
+    localStorage.setItem('user_role', response.data.user.role);
     
-    // 2. Alert the user
     alert("Access Granted!");
     
-    // 3. Tell App.vue to re-check the session and route the user!
-    window.dispatchEvent(new Event('auth-success'));
+    // Feature 1 & 2: Role-Based Routing
+    if (response.data.user.role === 'admin') {
+      router.push('/admin');
+    } else {
+      router.push('/dashboard');
+    }
 
   } catch (error) {
-    if (error.response && error.response.data.message) {
-       errorMessage.value = error.response.data.message;
-    } else {
-       errorMessage.value = "Access Denied. Check credentials.";
-    }
+    errorMessage.value = error.response?.data?.message || "Authorization Denied. Check credentials.";
   } finally {
     isLoading.value = false;
   }

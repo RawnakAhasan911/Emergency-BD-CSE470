@@ -17,9 +17,13 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role')->default('citizen'); // admin, citizen, guest
-            $table->boolean('is_suspended')->default(false);
+            
+            // Your custom fields:
+            $table->string('role')->default('citizen'); 
+            $table->string('status')->default('active'); 
+            // $table->boolean('is_suspended')->default(false);
             $table->integer('points')->default(2);
+            
             $table->rememberToken();
             $table->timestamps();
         });
@@ -38,7 +42,7 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
-    }
+    } // <--- The up() function properly closes here now!
 
     /**
      * Reverse the migrations.

@@ -11,9 +11,9 @@ class AuthController extends Controller
 {
     public function register(Request $request) {
         $fields = $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'email' => 'required|string|unique:users,email',
-            'password' => 'required|string|confirmed' // 'confirmed' looks for password_confirmation
+            'password' => 'required|string|min:8|max"16|confirmed' // 'confirmed' looks for password_confirmation
         ]);
     
         $user = User::create([
@@ -36,7 +36,7 @@ class AuthController extends Controller
     {
         $fields = $request->validate([
             'email' => 'required|string|email',
-            'password' => 'required|string'
+            'password' => 'required|string|max:16'
         ]);
 
         $user = User::where('email', $fields['email'])->first();
